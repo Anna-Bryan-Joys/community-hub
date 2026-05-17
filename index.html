@@ -29,6 +29,30 @@
       min-height: 100vh;
     }
 
+    /* ── Golden trim — wraps the entire hub window ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      border-radius: 12px;
+      padding: 2px;
+      background: linear-gradient(135deg,
+        #ffe8a0 0%,
+        #c8922a 22%,
+        #fff4c2 45%,
+        #a0681a 68%,
+        #e8c060 85%,
+        #ffe8a0 100%
+      );
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
     /* ── Header ── */
     .hub-header {
       background: var(--cream);
@@ -77,6 +101,83 @@
       max-width: 340px;
       line-height: 1.6;
       padding-bottom: 0.375rem;
+    }
+
+    /* ── Invisible scrollbars ── */
+    * { scrollbar-width: none; }
+    *::-webkit-scrollbar { display: none; }
+
+    /* ── Window controls ── */
+    .window-controls {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 8px;
+      z-index: 9999;
+      -webkit-app-region: drag;
+      pointer-events: none;
+    }
+
+    .win-btn {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: all;
+      -webkit-app-region: no-drag;
+      flex-shrink: 0;
+    }
+
+    .window-controls:hover .win-btn { opacity: 1; }
+
+    .win-close    { background: #ff5f57; }
+    .win-minimize { background: #febc2e; }
+    .win-expand   { background: #28c840; }
+
+    /* ── App strip ── */
+    .app-strip {
+      background: var(--deep);
+      padding: 0.5rem 2.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .app-strip-label {
+      font-size: 0.375rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(238,244,250,0.25);
+      margin-right: 0.5rem;
+    }
+
+    .app-btn {
+      font-size: 0.5625rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      font-family: 'Syne', sans-serif;
+      text-transform: uppercase;
+      color: rgba(238,244,250,0.6);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px;
+      padding: 0.35rem 0.875rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .app-btn:hover {
+      background: rgba(255,255,255,0.1);
+      color: rgba(238,244,250,0.95);
+      border-color: rgba(255,255,255,0.15);
     }
 
     /* ── Nav bar ── */
@@ -138,6 +239,30 @@
     }
 
     .nav-item:hover .nav-dropdown { display: block; }
+
+    /* ── Submenu ── */
+    .dropdown-item {
+      position: relative;
+    }
+    .dropdown-item .sub-dropdown {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 100%;
+      background: #fff;
+      border: 1px solid rgba(28,35,51,0.08);
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(28,35,51,0.10);
+      min-width: 160px;
+      z-index: 101;
+      padding: 0.5rem 0;
+    }
+    .dropdown-item:hover .sub-dropdown { display: block; }
+    .dropdown-item > .dropdown-link::after {
+      content: ' ›';
+      opacity: 0.4;
+      float: right;
+    }
 
     .dropdown-link {
       display: block;
@@ -447,6 +572,18 @@
     </div>
   </header>
 
+  <!-- Custom window controls -->
+  <div class="window-controls">
+    <button class="win-btn win-close"    onclick="if(window.pywebview) window.pywebview.api.close()"></button>
+    <button class="win-btn win-minimize" onclick="if(window.pywebview) window.pywebview.api.minimize()"></button>
+    <button class="win-btn win-expand"   onclick="if(window.pywebview) window.pywebview.api.maximize()"></button>
+  </div>
+
+  <div class="app-strip">
+    <span class="app-strip-label">Apps</span>
+    <button class="app-btn" onclick="launchApp('Glaido')">Glaido</button>
+  </div>
+
   <nav class="hub-nav">
 
     <!-- Resources -->
@@ -454,6 +591,7 @@
       <button class="nav-link">Resources <span class="chevron">▼</span></button>
       <div class="nav-dropdown">
         <a href="https://app.clickup.com" target="_blank" class="dropdown-link">ClickUp</a>
+        <a href="https://gladiator.ai" target="_blank" class="dropdown-link">Glaido</a>
         <a href="https://calendar.google.com" target="_blank" class="dropdown-link">Google Calendar</a>
         <a href="https://mail.google.com" target="_blank" class="dropdown-link">Gmail</a>
         <a href="https://outlook.com" target="_blank" class="dropdown-link">Outlook</a>
@@ -489,8 +627,21 @@
     <div class="nav-item">
       <button class="nav-link">Projects <span class="chevron">▼</span></button>
       <div class="nav-dropdown">
-        <a href="https://anna-bryan-joys.github.io/from-the-kitchen/book.html" target="_blank" class="dropdown-link">From the Kitchen</a>
+        <div class="dropdown-item">
+          <a href="http://localhost:8765/from-the-kitchen/book.html" class="dropdown-link">From the Kitchen</a>
+          <div class="sub-dropdown">
+            <a href="http://localhost:8765/from-the-kitchen/book.html" class="dropdown-link">Open Book</a>
+            <a href="http://localhost:8765/from-the-kitchen/recipe-template.html" class="dropdown-link">New Recipe</a>
+          </div>
+        </div>
       </div>
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <!-- Power Tools -->
+    <div class="nav-item">
+      <button class="nav-link" onclick="window.pywebview ? window.pywebview.api.open_external('http://localhost:8765/power-tools.html') : window.open('http://localhost:8765/power-tools.html')">Power Tools</button>
     </div>
 
     <div class="nav-divider"></div>
@@ -522,8 +673,7 @@
           <div class="card-next-text">Add more recipes — cook the short ribs, photograph them. Wire in a voice recording of the recipe read-aloud.</div>
         </div>
         <div class="card-links">
-          <a href="https://anna-bryan-joys.github.io/from-the-kitchen/" target="_blank" class="card-link primary">View Live Site</a>
-          <a href="https://github.com/Anna-Bryan-Joys/from-the-kitchen" target="_blank" class="card-link">GitHub Repo</a>
+          <a href="http://localhost:8765/from-the-kitchen/book.html" class="card-link primary">Open Book</a>
         </div>
       </div>
 
@@ -613,6 +763,10 @@
       }
     }
 
+    async function launchApp(name) {
+      await fetch(`/api/launch?app=${encodeURIComponent(name)}`);
+    }
+
     async function completeTask(taskId, el) {
       el.classList.add('checked');
       el.closest('.task-item').classList.add('done');
@@ -629,6 +783,17 @@
     }
 
     loadTasks();
+
+    // All links open in the browser — hub stays visible as the cockpit
+    document.addEventListener('click', function(e) {
+      const a = e.target.closest('a');
+      if (!a) return;
+      const href = a.getAttribute('href');
+      if (href && (href.startsWith('http://') || href.startsWith('https://')) && window.pywebview) {
+        e.preventDefault();
+        window.pywebview.api.open_external(href);
+      }
+    }, true);
   </script>
 
 </body>
